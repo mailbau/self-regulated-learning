@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { getAllUsers } from "@/lib/api/admin"
+import { api } from "@/lib/api"
 import { ApiError } from "@/lib/api/client"
 import UserDetails from "./UserDetails"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -26,7 +26,7 @@ export default function UsersList() {
         const fetchUsers = async () => {
             try {
                 setLoading(true)
-                const data = await getAllUsers()
+                const data = await api.getAllUsers()
                 setUsers(data)
                 setFilteredUsers(data)
             } catch (err) {

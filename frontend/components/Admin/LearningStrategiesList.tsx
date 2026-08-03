@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Input } from "@/components/ui/input"
-import { getStrategies, deleteStrategy } from "@/lib/api/admin"
+import { api } from "@/lib/api"
 import { ApiError } from "@/lib/api/client"
 import type { LearningStrategy } from "@/types"
 import {
@@ -38,7 +38,7 @@ export default function LearningStrategiesList() {
         try {
             setLoading(true)
             setError(null)
-            const data = await getStrategies()
+            const data = await api.getStrategies()
             setStrategies(data)
             setFilteredStrategies(data)
         } catch (err) {
@@ -71,7 +71,7 @@ export default function LearningStrategiesList() {
     const handleDelete = async (strategy: LearningStrategy) => {
         try {
             setDeletingId(strategy.id)
-            await deleteStrategy(strategy.id)
+            await api.deleteStrategy(strategy.id)
             fetchStrategies()
         } catch (err) {
             setError(err instanceof ApiError ? err.message : "An error occurred while deleting the strategy")

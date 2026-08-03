@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle, AtSign, Loader2 } from "lucide-react"
-import { requestReset } from "@/lib/api/auth"
+import { api } from "@/lib/api"
 import { ApiError } from "@/lib/api/client"
 
 export default function ForgotPassword() {
@@ -28,7 +28,7 @@ export default function ForgotPassword() {
         setSuccess(false)
 
         try {
-            await requestReset(email)
+            await api.requestReset(email)
             setSuccess(true)
         } catch (err) {
             setError(err instanceof ApiError ? err.message : "Failed to request password reset")

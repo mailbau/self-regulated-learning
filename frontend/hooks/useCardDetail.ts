@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react"
 import type { Card } from "@/types"
-import { getSessionsForCard, startSession, endSession } from "@/lib/api/study-sessions"
+import { api } from "@/lib/api"
 import { ApiError } from "@/lib/api/client"
 import { useToast } from "@/hooks/use-toast"
 
@@ -22,7 +22,7 @@ export function useCardDetail({ card, onUpdateField }: UseCardDetailOptions) {
 
     const refreshSessions = useCallback(async () => {
         try {
-            const data = await getSessionsForCard(card.id)
+            const data = await api.getSessionsForCard(card.id)
             setTotalStudyMinutes(data.total_study_time_minutes)
 
             const active = data.sessions.find((session) => !session.end_time)
@@ -57,13 +57,13 @@ export function useCardDetail({ card, onUpdateField }: UseCardDetailOptions) {
     const toggleTimer = useCallback(async () => {
         try {
             if (!isTimerActive) {
-                const session = await startSession(card.id)
+                const session = await api.startSession(card.id)
                 setCurrentSessionId(session._id)
                 setStartTime(new Date())
                 setElapsedMinutes(0)
                 setIsTimerActive(true)
             } else if (currentSessionId) {
-                await endSession(currentSessionId)
+                await api.endSession(currentSessionId)
                 setCurrentSessionId(null)
                 setStartTime(null)
                 setElapsedMinutes(0)

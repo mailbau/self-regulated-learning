@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { createCourse, updateCourse } from "@/lib/api/admin"
+import { api } from "@/lib/api"
 import { ApiError } from "@/lib/api/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -38,9 +38,9 @@ export default function CourseForm({ course, onCourseSaved, onCancel, isModal = 
 
         try {
             if (course) {
-                await updateCourse(course.course_code, { course_code: courseCode, course_name: courseName })
+                await api.updateCourse(course.course_code, { course_code: courseCode, course_name: courseName })
             } else {
-                await createCourse({ course_code: courseCode, course_name: courseName })
+                await api.createCourse({ course_code: courseCode, course_name: courseName })
             }
 
             onCourseSaved()

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react"
 import type { ProgressReport } from "@/types"
-import { getProgressReport } from "@/lib/api/analytics"
+import { api } from "@/lib/api"
 import { ApiError } from "@/lib/api/client"
 import { useToast } from "@/hooks/use-toast"
 
@@ -15,7 +15,7 @@ export function useAnalytics(enabled: boolean) {
     const refresh = useCallback(async () => {
         setLoading(true)
         try {
-            const data = await getProgressReport()
+            const data = await api.getProgressReport()
             setReport(data)
         } catch (err) {
             toast({

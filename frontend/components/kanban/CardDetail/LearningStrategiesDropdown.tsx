@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { ChevronDown, BookOpen, FileText, Network, Brain, Clock, Users, Loader2 } from "lucide-react"
-import { getStrategies } from "@/lib/api/admin"
+import { api } from "@/lib/api"
 import { ApiError } from "@/lib/api/client"
 import type { LearningStrategy } from "@/types"
 
@@ -36,7 +36,7 @@ export default function LearningStrategiesDropdown({ strategy, onChange }: Learn
             try {
                 setLoading(true)
                 setError(null)
-                const data = await getStrategies()
+                const data = await api.getStrategies()
                 setStrategies(data)
             } catch (err) {
                 setError(err instanceof ApiError ? err.message : "An error occurred while fetching strategies")

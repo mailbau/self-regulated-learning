@@ -7,7 +7,7 @@ import CoursesList from "@/components/Admin/CoursesList"
 import LearningStrategiesList from "@/components/Admin/LearningStrategiesList"
 import UsersList from "@/components/Admin/UsersList"
 import LogsList from "@/components/Admin/LogsList"
-import { getCurrentUser } from "@/lib/api/auth"
+import { api } from "@/lib/api"
 import { ApiError } from "@/lib/api/client"
 import { useRouter } from "next/router"
 import Navbar, { AdminSection } from "@/components/Navbar"
@@ -40,7 +40,7 @@ export default function AdminDashboard() {
                 }
 
                 try {
-                    const userData = await getCurrentUser()
+                    const userData = await api.getCurrentUser()
                     setUser(userData)
                 } catch (error) {
                     // If token is invalid, clear it

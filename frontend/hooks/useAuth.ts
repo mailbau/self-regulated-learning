@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/router"
 import type { User } from "@/types"
-import { getCurrentUser, login as loginRequest, logout as logoutRequest } from "@/lib/api/auth"
+import { api } from "@/lib/api"
 import { setAccessToken } from "@/lib/api/client"
 import { useToast } from "@/hooks/use-toast"
 
@@ -30,7 +30,7 @@ export function useAuth({ redirectTo }: UseAuthOptions = {}) {
             }
 
             try {
-                const currentUser = await getCurrentUser()
+                const currentUser = await api.getCurrentUser()
                 if (active) setUser(currentUser)
             } catch {
                 setAccessToken(null)
@@ -47,16 +47,16 @@ export function useAuth({ redirectTo }: UseAuthOptions = {}) {
     }, [router, redirectTo])
 
     const login = useCallback(async (username: string, password: string) => {
-        const { token } = await loginRequest(username, password)
+        const { token } = await api.login(username, password)
         setAccessToken(token)
-        const currentUser = await getCurrentUser()
+        const currentUser = await api.getCurrentUser()
         setUser(currentUser)
         return currentUser
     }, [])
 
     const logout = useCallback(async () => {
         try {
-            await logoutRequest()
+            await api.logout()
         } catch (err) {
             toast({
                 title: "Logout may not have fully completed",

@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Loader2, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import type { LearningStrategy } from "@/types"
-import { createStrategy, updateStrategy } from "@/lib/api/admin"
+import { api } from "@/lib/api"
 import { ApiError } from "@/lib/api/client"
 
 interface LearningStrategyFormProps {
@@ -39,9 +39,9 @@ export default function LearningStrategyForm({ strategy, onStrategySaved, onCanc
         try {
             const data = { name, description: description.trim() || null }
             if (strategy) {
-                await updateStrategy(strategy.id, data)
+                await api.updateStrategy(strategy.id, data)
             } else {
-                await createStrategy(data)
+                await api.createStrategy(data)
             }
 
             onStrategySaved()

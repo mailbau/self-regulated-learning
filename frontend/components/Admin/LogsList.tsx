@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
-import { getAllLogs } from "@/lib/api/admin"
+import { api } from "@/lib/api"
 import { ApiError } from "@/lib/api/client"
 import type { Log } from "@/types"
 
@@ -25,7 +25,7 @@ export default function LogsList() {
         const fetchLogs = async () => {
             try {
                 setLoading(true)
-                const data = await getAllLogs()
+                const data = await api.getAllLogs()
                 setLogs(data)
                 setFilteredLogs(data)
             } catch (err) {

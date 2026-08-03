@@ -4,8 +4,7 @@ import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/router"
 import type { DropResult } from "react-beautiful-dnd"
 import type { Card, Difficulty, List, MoveCardEvent } from "@/types"
-import { getBoard, updateBoard as updateBoardRequest } from "@/lib/api/board"
-import { createCardMovement } from "@/lib/api/cards"
+import { api } from "@/lib/api"
 import { ApiError } from "@/lib/api/client"
 import { DEFAULT_LEARNING_STRATEGY } from "@/lib/constants"
 import { useToast } from "@/hooks/use-toast"
@@ -23,7 +22,7 @@ export function useBoard() {
 
         const loadBoard = async () => {
             try {
-                const board = await getBoard()
+                const board = await api.getBoard()
                 if (!active) return
                 setLists(board.lists)
                 setBoardId(board.id)
@@ -45,7 +44,7 @@ export function useBoard() {
         async (nextLists: List[], id: string | null) => {
             if (!id) return
             try {
-                await updateBoardRequest(id, nextLists)
+                await api.updateBoard(id, nextLists)
             } catch (err) {
                 toast({
                     title: "Failed to save board",
@@ -120,7 +119,7 @@ export function useBoard() {
                         ...(movedCard.column_movements || []),
                         { fromColumn: sourceList.id, toColumn: destList.id, timestamp: now },
                     ]
-                    createCardMovement(movedCard.id, sourceList.id, destList.id).catch((err) => {
+                    api.createCardMovement(movedCard.id, sourceList.id, destList.id).catch((err) => {
                         toast({
                             title: "Move wasn't recorded",
                             description:

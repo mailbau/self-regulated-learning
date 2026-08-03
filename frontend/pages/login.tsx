@@ -6,8 +6,9 @@ import { useState } from "react"
 import { useRouter } from "next/router"
 import Link from "next/link"
 import Player from "@/components/LottiePlayer"
-import { login } from "@/lib/api/auth"
+import { api, isDemoMode } from "@/lib/api"
 import { setAccessToken, ApiError } from "@/lib/api/client"
+import { enterDemoSession, type DemoRole } from "@/lib/demo/enterDemoSession"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -19,8 +20,21 @@ export default function Login() {
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
     const [loading, setLoading] = useState(false)
+    const [demoLoadingRole, setDemoLoadingRole] = useState<DemoRole | null>(null)
     const [error, setError] = useState<string | null>(null)
     const router = useRouter()
+
+    const handleDemoLogin = async (role: DemoRole) => {
+        setDemoLoadingRole(role)
+        setError(null)
+        try {
+            await enterDemoSession(role)
+            router.push(role === "admin" ? "/admin" : "/board")
+        } catch {
+            setError("Couldn't start the demo. Please try again.")
+            setDemoLoadingRole(null)
+        }
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -28,7 +42,7 @@ export default function Login() {
         setError(null)
 
         try {
-            const data = await login(username, password)
+            const data = await api.login(username, password)
             setAccessToken(data.token)
 
             if (data.role === "admin") {
@@ -76,6 +90,32 @@ export default function Login() {
 
                 {/* Right side - Login Form */}
                 <div className="w-full lg:w-1/2 max-w-md">
+                    {isDemoMode && (
+                        <Card className="border-muted/60 shadow-lg mb-4">
+                            <CardHeader className="pb-3">
+                                <CardTitle className="text-base">Just here to look around?</CardTitle>
+                                <CardDescription>Skip the form and try the demo instantly.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="grid grid-cols-2 gap-3">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => handleDemoLogin("student")}
+                                    disabled={demoLoadingRole !== null}
+                                >
+                                    {demoLoadingRole === "student" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    🎓 Try as Student
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => handleDemoLogin("admin")}
+                                    disabled={demoLoadingRole !== null}
+                                >
+                                    {demoLoadingRole === "admin" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    🛠️ Try as Admin
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    )}
                     <Card className="border-muted/60 shadow-lg">
                         <CardHeader className="space-y-1">
                             <CardTitle className="text-2xl font-bold text-center">Sign In</CardTitle>

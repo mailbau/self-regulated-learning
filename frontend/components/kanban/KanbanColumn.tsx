@@ -4,7 +4,7 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import { Droppable } from "react-beautiful-dnd"
 import KanbanCard from "./KanbanCard"
-import { getCourses } from "@/lib/api/admin"
+import { api } from "@/lib/api"
 import { getAccessToken } from "@/lib/api/client"
 import { Plus, X, ChevronDown, AlertCircle } from "lucide-react"
 import type { Card, Difficulty } from "@/types"
@@ -31,7 +31,7 @@ export default function KanbanColumn({ id, title, cards, onAddCard, onCardClick 
         const fetchData = async () => {
             if (!getAccessToken()) return
             try {
-                const data = await getCourses()
+                const data = await api.getCourses()
                 setCourses(data)
             } catch {
                 // Course list is a convenience for the add-card form; leave it empty on failure.

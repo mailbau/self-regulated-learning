@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle, Lock, Loader2 } from "lucide-react"
-import { resetPassword } from "@/lib/api/auth"
+import { api } from "@/lib/api"
 import { ApiError } from "@/lib/api/client"
 
 export default function ResetPassword() {
@@ -49,7 +49,7 @@ export default function ResetPassword() {
         }
 
         try {
-            await resetPassword(token, password)
+            await api.resetPassword(token, password)
             setSuccess(true)
             // Redirect to login page after 3 seconds
             setTimeout(() => {

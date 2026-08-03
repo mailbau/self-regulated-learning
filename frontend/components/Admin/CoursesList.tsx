@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { getCourses, deleteCourse } from "@/lib/api/admin"
+import { api } from "@/lib/api"
 import { ApiError } from "@/lib/api/client"
 import CourseForm from "./CoursesForm"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -37,7 +37,7 @@ export default function CoursesList() {
         try {
             setLoading(true)
             setError(null)
-            const data = await getCourses()
+            const data = await api.getCourses()
             setCourses(data)
             setFilteredCourses(data)
         } catch (err) {
@@ -70,7 +70,7 @@ export default function CoursesList() {
     const handleDeleteCourse = async (course: Course) => {
         try {
             setDeletingId(course.course_code)
-            await deleteCourse(course.course_code)
+            await api.deleteCourse(course.course_code)
             fetchCourses()
         } catch (err) {
             setError(err instanceof ApiError ? err.message : "An error occurred.")

@@ -6,7 +6,7 @@ import { useState } from "react"
 import { useRouter } from "next/router"
 import Link from "next/link"
 import Player from "@/components/LottiePlayer"
-import { register } from "@/lib/api/auth"
+import { api } from "@/lib/api"
 import { ApiError } from "@/lib/api/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -31,7 +31,7 @@ export default function Register() {
         setError(null)
 
         try {
-            await register(firstName, lastName, email, username, password)
+            await api.register(firstName, lastName, email, username, password)
             router.push("/login?registered=true")
         } catch (err) {
             setError(err instanceof ApiError ? err.message : "Registration failed. Please try again.")

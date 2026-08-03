@@ -1,9 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { getUserByUsername } from "@/lib/api/admin"
-import { getBoardByUser } from "@/lib/api/board"
-import { getSessionsForCard } from "@/lib/api/study-sessions"
+import { api } from "@/lib/api"
 import { ApiError } from "@/lib/api/client"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -239,10 +237,10 @@ export default function UserDetails({ username, onClose }: UserDetailsProps) {
         const fetchUserDetails = async () => {
             try {
                 setLoading(true)
-                const foundUser = await getUserByUsername(username)
+                const foundUser = await api.getUserByUsername(username)
                 setUser(foundUser)
 
-                const boardData = await getBoardByUser(foundUser._id)
+                const boardData = await api.getBoardByUser(foundUser._id)
                 setBoard(boardData)
             } catch (err) {
                 setError(err instanceof ApiError ? err.message : "Failed to fetch user details")
@@ -263,7 +261,7 @@ export default function UserDetails({ username, onClose }: UserDetailsProps) {
             for (const list of board.lists) {
                 for (const card of list.cards) {
                     try {
-                        const data = await getSessionsForCard(card.id)
+                        const data = await api.getSessionsForCard(card.id)
                         times[card.id] = data.total_study_time_minutes
                     } catch {
                         // No study time available for this card; leave it out of the map.

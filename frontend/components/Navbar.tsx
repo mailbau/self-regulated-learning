@@ -6,7 +6,7 @@ import { useState, useEffect } from "react"
 import { User, LogOut, Bell, Menu, X, GraduationCap, BookOpen, Lightbulb, Users, ClockIcon } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import { getCurrentUser, logout } from "@/lib/api/auth"
+import { api } from "@/lib/api"
 
 export type AdminSection = "courses" | "learningStrategies" | "users" | "logs"
 
@@ -50,7 +50,7 @@ const Navbar = ({
                     return
                 }
 
-                const userData = await getCurrentUser()
+                const userData = await api.getCurrentUser()
                 setUser(userData)
             } catch {
                 router.push("/login")
@@ -64,7 +64,7 @@ const Navbar = ({
 
     const handleLogout = async () => {
         try {
-            await logout() // call your API logout
+            await api.logout() // call your API logout
         } catch {
             // Best-effort server-side logout; local session is cleared regardless.
         } finally {

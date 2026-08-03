@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { AlertCircle, User, Lock, Loader2, CheckCircle2, UserRound, AtSign, ArrowLeft } from "lucide-react"
-import { getCurrentUser, updateProfile, updatePassword } from "@/lib/api/auth"
+import { api } from "@/lib/api"
 import { ApiError } from "@/lib/api/client"
 
 export default function ProfilePage() {
@@ -56,7 +56,7 @@ export default function ProfilePage() {
                     return
                 }
 
-                const userData = await getCurrentUser()
+                const userData = await api.getCurrentUser()
                 setUser(userData)
                 setFormData({
                     firstName: userData.first_name,
@@ -97,7 +97,7 @@ export default function ProfilePage() {
         setSuccess(null)
 
         try {
-            await updateProfile({
+            await api.updateProfile({
                 first_name: formData.firstName,
                 last_name: formData.lastName,
                 email: formData.email,
@@ -105,7 +105,7 @@ export default function ProfilePage() {
             })
             setSuccess("Profile updated successfully")
             // The update endpoint only returns a confirmation message, so re-fetch the user record.
-            const userData = await getCurrentUser()
+            const userData = await api.getCurrentUser()
             setUser(userData)
         } catch (err) {
             setError(err instanceof ApiError ? err.message : "An error occurred while updating your profile")
@@ -127,7 +127,7 @@ export default function ProfilePage() {
         }
 
         try {
-            await updatePassword(passwordData.currentPassword, passwordData.newPassword)
+            await api.updatePassword(passwordData.currentPassword, passwordData.newPassword)
             setPasswordSuccess("Password updated successfully")
             setPasswordData({
                 currentPassword: "",
