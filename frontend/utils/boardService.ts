@@ -1,9 +1,9 @@
-import type { ListType, Card } from "@/types";
+import type { List, Card } from "@/types";
 import { getBoard, updateBoard } from "@/utils/api";
 import { NextRouter } from "next/router";
 import { createCardMovement } from "./api"
 
-export async function updateBoardState(boardId: string | null, lists: ListType[]) {
+export async function updateBoardState(boardId: string | null, lists: List[]) {
     if (!boardId) return;
 
     try {
@@ -15,8 +15,8 @@ export async function updateBoardState(boardId: string | null, lists: ListType[]
 }
 
 export function addCard(
-    lists: ListType[],
-    setLists: React.Dispatch<React.SetStateAction<ListType[]>>,
+    lists: List[],
+    setLists: React.Dispatch<React.SetStateAction<List[]>>,
     listId: string,
     courseCode: string,
     courseName: string,
@@ -50,8 +50,8 @@ export function addCard(
 }
 
 export function updateCard(
-    lists: ListType[],
-    setLists: React.Dispatch<React.SetStateAction<ListType[]>>,
+    lists: List[],
+    setLists: React.Dispatch<React.SetStateAction<List[]>>,
     boardId: string | null,
     cardId: string,
     field: keyof Card,
@@ -69,8 +69,8 @@ export function updateCard(
 }
 
 export async function moveCard(
-    lists: ListType[],
-    setLists: React.Dispatch<React.SetStateAction<ListType[]>>,
+    lists: List[],
+    setLists: React.Dispatch<React.SetStateAction<List[]>>,
     boardId: string | null,
     sourceIndex: number,
     destinationIndex: number,
@@ -135,7 +135,7 @@ export async function moveCard(
 }
 
 export async function fetchBoardData(
-    setLists: (lists: ListType[]) => void,
+    setLists: (lists: List[]) => void,
     setBoardId: (id: string | null) => void,
     setBoardName: (name: string) => void,
     router: NextRouter
@@ -158,8 +158,8 @@ export async function fetchBoardData(
 }
 
 export function archiveCard(
-    lists: ListType[],
-    setLists: React.Dispatch<React.SetStateAction<ListType[]>>,
+    lists: List[],
+    setLists: React.Dispatch<React.SetStateAction<List[]>>,
     boardId: string | null,
     cardId: string
 ) {
@@ -175,8 +175,8 @@ export function archiveCard(
 }
 
 export function restoreCard(
-    lists: ListType[],
-    setLists: React.Dispatch<React.SetStateAction<ListType[]>>,
+    lists: List[],
+    setLists: React.Dispatch<React.SetStateAction<List[]>>,
     boardId: string | null,
     cardId: string
 ) {
@@ -192,8 +192,8 @@ export function restoreCard(
 }
 
 export function deleteCard(
-    lists: ListType[],
-    setLists: React.Dispatch<React.SetStateAction<ListType[]>>,
+    lists: List[],
+    setLists: React.Dispatch<React.SetStateAction<List[]>>,
     boardId: string | null,
     cardId: string
 ) {

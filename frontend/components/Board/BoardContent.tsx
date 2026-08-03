@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { DragDropContext, type DropResult } from "react-beautiful-dnd"
-import type { ListType, Card } from "@/types"
+import type { List as ListModel, Card } from "@/types"
 import List from "../List"
 import TaskDetails from "../TaskDetails/TaskDetails"
 import { addCard, updateCard, moveCard, archiveCard, deleteCard } from "@/utils/boardService"
@@ -14,8 +14,8 @@ export default function BoardContent({
     setLists,
     boardId,
 }: {
-    lists: ListType[]
-    setLists: React.Dispatch<React.SetStateAction<ListType[]>>
+    lists: ListModel[]
+    setLists: React.Dispatch<React.SetStateAction<ListModel[]>>
     boardId: string | null
 }) {
     const [selectedCard, setSelectedCard] = useState<{ listId: string; card: Card } | null>(null)

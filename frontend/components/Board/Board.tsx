@@ -6,10 +6,10 @@ import BoardHeader from "./BoardHeader"
 import BoardContent from "./BoardContent"
 import ArchivedTasksModal from "@/components/ArchivedTasksModal"
 import { fetchBoardData, restoreCard, deleteCard } from "@/utils/boardService"
-import type { ListType, Card } from "@/types"
+import type { List, Card } from "@/types"
 
 export default function Board() {
-    const [lists, setLists] = useState<ListType[]>([])
+    const [lists, setLists] = useState<List[]>([])
     const [boardId, setBoardId] = useState<string | null>(null)
     const [boardName, setBoardName] = useState<string>("")
     const [isArchivedModalOpen, setIsArchivedModalOpen] = useState(false)
