@@ -2,18 +2,14 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { addCourse, updateCourse } from "@/utils/api"
+import { createCourse, updateCourse } from "@/lib/api/admin"
+import { ApiError } from "@/lib/api/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle, Loader2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-
-interface Course {
-    id: string
-    course_code: string
-    course_name: string
-}
+import type { Course } from "@/types"
 
 interface CourseFormProps {
     course?: Course
@@ -41,32 +37,10 @@ export default function CourseForm({ course, onCourseSaved, onCancel, isModal = 
         setError(null)
 
         try {
-            const token = localStorage.getItem("token")
-            if (!token) {
-                setError("No token found. Please log in.")
-                return
-            }
-
             if (course) {
-                // Update existing course
-                const response = await updateCourse(course.course_code, {
-                    course_code: courseCode,
-                    course_name: courseName
-                })
-
-                if (!response.ok) {
-                    throw new Error("Failed to update course.")
-                }
+                await updateCourse(course.course_code, { course_code: courseCode, course_name: courseName })
             } else {
-                // Create new course
-                const response = await addCourse({
-                    course_code: courseCode,
-                    course_name: courseName
-                })
-
-                if (!response.ok) {
-                    throw new Error("Failed to add course.")
-                }
+                await createCourse({ course_code: courseCode, course_name: courseName })
             }
 
             onCourseSaved()
@@ -74,8 +48,8 @@ export default function CourseForm({ course, onCourseSaved, onCancel, isModal = 
                 setCourseCode("")
                 setCourseName("")
             }
-        } catch (err: any) {
-            setError(err.message || "An error occurred.")
+        } catch (err) {
+            setError(err instanceof ApiError ? err.message : "An error occurred.")
         } finally {
             setLoading(false)
         }
@@ -144,4 +118,3 @@ export default function CourseForm({ course, onCourseSaved, onCancel, isModal = 
         </Card>
     )
 }
-

@@ -2,19 +2,20 @@
 
 import { Draggable } from "react-beautiful-dnd"
 import { Clock, AlertTriangle, AlertCircle, Percent } from "lucide-react"
+import type { Difficulty, Priority } from "@/types"
 
-interface CardProps {
+interface KanbanCardProps {
     id: string
     title: string
     subTitle: string
-    difficulty: "easy" | "medium" | "hard" | "expert"
-    priority: "low" | "medium" | "high" | "critical"
+    difficulty: Difficulty
+    priority: Priority
     grade?: string
     index: number
     onClick: () => void
 }
 
-export default function Card({ id, title, subTitle, difficulty, priority, grade, index, onClick }: CardProps) {
+export default function KanbanCard({ id, title, subTitle, difficulty, priority, grade, index, onClick }: KanbanCardProps) {
     // Get priority icon and color
     const getPriorityDetails = (priority: string) => {
         switch (priority) {
@@ -102,7 +103,7 @@ export default function Card({ id, title, subTitle, difficulty, priority, grade,
                     ref={provided.innerRef}
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
-                    className={`bg-white dark:bg-slate-800 p-4 rounded-lg border border-gray-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-600 shadow-sm hover:shadow-md transition-all duration-200 
+                    className={`bg-white dark:bg-slate-800 p-4 rounded-lg border border-gray-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-600 shadow-sm hover:shadow-md transition-all duration-200
              ${snapshot.isDragging ? "shadow-lg ring-2 ring-indigo-500 ring-opacity-50 rotate-1" : ""}
              transform hover:-translate-y-1 hover:scale-[1.02]`}
                     onClick={onClick}

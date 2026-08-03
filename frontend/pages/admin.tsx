@@ -1,14 +1,14 @@
 "use client"
 
 import type React from "react"
-import Image from "next/image"
 import { useState, useEffect } from "react"
 import { Loader2 } from "lucide-react"
 import CoursesList from "@/components/Admin/CoursesList"
 import LearningStrategiesList from "@/components/Admin/LearningStrategiesList"
 import UsersList from "@/components/Admin/UsersList"
 import LogsList from "@/components/Admin/LogsList"
-import { getCurrentUser } from "@/utils/api"
+import { getCurrentUser } from "@/lib/api/auth"
+import { ApiError } from "@/lib/api/client"
 import { useRouter } from "next/router"
 import Navbar, { AdminSection } from "@/components/Navbar"
 
@@ -42,15 +42,13 @@ export default function AdminDashboard() {
                 try {
                     const userData = await getCurrentUser()
                     setUser(userData)
-                } catch (error: any) {
-                    console.error("Error fetching user:", error)
+                } catch (error) {
                     // If token is invalid, clear it
                     localStorage.removeItem("token")
-                    setError(error.message || "Failed to fetch user data")
+                    setError(error instanceof ApiError ? error.message : "Failed to fetch user data")
                 }
-            } catch (error: any) {
-                console.error("Error in auth check:", error)
-                setError(error.message || "Authentication error")
+            } catch (error) {
+                setError(error instanceof ApiError ? error.message : "Authentication error")
             } finally {
                 setLoading(false)
             }

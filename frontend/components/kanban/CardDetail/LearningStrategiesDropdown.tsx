@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from "react"
 import { ChevronDown, BookOpen, FileText, Network, Brain, Clock, Users, Loader2 } from "lucide-react"
-import { getAllLearningStrategies } from "@/utils/api"
+import { getStrategies } from "@/lib/api/admin"
+import { ApiError } from "@/lib/api/client"
 import type { LearningStrategy } from "@/types"
 
 interface LearningStrategiesDropdownProps {
@@ -35,27 +36,10 @@ export default function LearningStrategiesDropdown({ strategy, onChange }: Learn
             try {
                 setLoading(true)
                 setError(null)
-                const token = localStorage.getItem("token")
-                if (!token) {
-                    setError("No token found. Please log in.")
-                    return
-                }
-
-                const response = await getAllLearningStrategies()
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch learning strategies: ${response.status} ${response.statusText}`)
-                }
-
-                const data = await response.json()
-                const mappedStrategies = data.map((strategy: any) => ({
-                    id: strategy._id || strategy.id,
-                    name: strategy.learning_strat_name || strategy.name,
-                    description: strategy.description,
-                }))
-                setStrategies(mappedStrategies)
-            } catch (err: any) {
-                console.error("Error fetching strategies:", err)
-                setError(err.message || "An error occurred while fetching strategies")
+                const data = await getStrategies()
+                setStrategies(data)
+            } catch (err) {
+                setError(err instanceof ApiError ? err.message : "An error occurred while fetching strategies")
             } finally {
                 setLoading(false)
             }

@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import type { LearningStrategy } from "../../types"
-import { addLearningStrategy, updateLearningStrategy } from "../../utils/api"
+import type { LearningStrategy } from "@/types"
+import { createStrategy, updateStrategy } from "@/lib/api/admin"
+import { ApiError } from "@/lib/api/client"
 
 interface LearningStrategyFormProps {
     strategy?: LearningStrategy // If provided, we're editing
@@ -36,60 +37,11 @@ export default function LearningStrategyForm({ strategy, onStrategySaved, onCanc
         setError(null)
 
         try {
-            const token = localStorage.getItem("token")
-            if (!token) {
-                setError("No token found. Please log in.")
-                return
-            }
-
-            console.log('Submitting strategy with token:', token.substring(0, 10) + '...');
+            const data = { name, description: description.trim() || null }
             if (strategy) {
-                // Update existing strategy
-                const updateData = {
-                    name,
-                    description: description.trim() || null
-                };
-                console.log('Updating strategy:', {
-                    id: strategy.id,
-                    ...updateData
-                });
-                const response = await updateLearningStrategy(strategy.id, updateData)
-                console.log('Update response status:', response.status);
-
-                if (!response.ok) {
-                    const errorData = await response.text();
-                    console.error('Error response:', errorData);
-                    throw new Error(`Failed to update learning strategy: ${response.status} ${response.statusText}`);
-                }
-
-                try {
-                    const responseData = await response.json();
-                    console.log('Update response data:', responseData);
-                } catch (e) {
-                    console.log('No response data to parse');
-                }
+                await updateStrategy(strategy.id, data)
             } else {
-                // Create new strategy
-                const createData = {
-                    name,
-                    description: description.trim() || null
-                };
-                console.log('Creating new strategy:', createData);
-                const response = await addLearningStrategy(createData)
-                console.log('Create response status:', response.status);
-
-                if (!response.ok) {
-                    const errorData = await response.text();
-                    console.error('Error response:', errorData);
-                    throw new Error(`Failed to add learning strategy: ${response.status} ${response.statusText}`);
-                }
-
-                try {
-                    const responseData = await response.json();
-                    console.log('Create response data:', responseData);
-                } catch (e) {
-                    console.log('No response data to parse');
-                }
+                await createStrategy(data)
             }
 
             onStrategySaved()
@@ -97,9 +49,8 @@ export default function LearningStrategyForm({ strategy, onStrategySaved, onCanc
                 setName("")
                 setDescription("")
             }
-        } catch (err: any) {
-            console.error('Error in handleSubmit:', err);
-            setError(err.message || "An error occurred while saving the strategy")
+        } catch (err) {
+            setError(err instanceof ApiError ? err.message : "An error occurred while saving the strategy")
         } finally {
             setLoading(false)
         }
@@ -163,4 +114,3 @@ export default function LearningStrategyForm({ strategy, onStrategySaved, onCanc
         </Card>
     )
 }
-

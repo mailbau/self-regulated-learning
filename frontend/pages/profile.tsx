@@ -13,7 +13,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { AlertCircle, User, Lock, Loader2, CheckCircle2, UserRound, AtSign, ArrowLeft } from "lucide-react"
-import { getCurrentUser, updateProfile, updatePassword } from "@/utils/api"
+import { getCurrentUser, updateProfile, updatePassword } from "@/lib/api/auth"
+import { ApiError } from "@/lib/api/client"
 
 export default function ProfilePage() {
     const router = useRouter()
@@ -63,8 +64,7 @@ export default function ProfilePage() {
                     email: userData.email,
                     username: userData.username,
                 })
-            } catch (error) {
-                console.error("Error fetching user:", error)
+            } catch {
                 router.push("/login")
             } finally {
                 setLoading(false)
@@ -97,24 +97,18 @@ export default function ProfilePage() {
         setSuccess(null)
 
         try {
-            const response = await updateProfile({
+            await updateProfile({
                 first_name: formData.firstName,
                 last_name: formData.lastName,
                 email: formData.email,
                 username: formData.username,
             })
-
-            if (response.ok) {
-                setSuccess("Profile updated successfully")
-                // Update the user state with new data
-                const userData = await response.json()
-                setUser(userData)
-            } else {
-                const errorData = await response.json()
-                setError(errorData.message || "Failed to update profile")
-            }
+            setSuccess("Profile updated successfully")
+            // The update endpoint only returns a confirmation message, so re-fetch the user record.
+            const userData = await getCurrentUser()
+            setUser(userData)
         } catch (err) {
-            setError("An error occurred while updating your profile")
+            setError(err instanceof ApiError ? err.message : "An error occurred while updating your profile")
         } finally {
             setUpdating(false)
         }
@@ -133,21 +127,15 @@ export default function ProfilePage() {
         }
 
         try {
-            const response = await updatePassword(passwordData.currentPassword, passwordData.newPassword)
-
-            if (response.ok) {
-                setPasswordSuccess("Password updated successfully")
-                setPasswordData({
-                    currentPassword: "",
-                    newPassword: "",
-                    confirmPassword: "",
-                })
-            } else {
-                const errorData = await response.json()
-                setPasswordError(errorData.message || "Failed to update password")
-            }
+            await updatePassword(passwordData.currentPassword, passwordData.newPassword)
+            setPasswordSuccess("Password updated successfully")
+            setPasswordData({
+                currentPassword: "",
+                newPassword: "",
+                confirmPassword: "",
+            })
         } catch (err) {
-            setPasswordError("An error occurred while updating your password")
+            setPasswordError(err instanceof ApiError ? err.message : "An error occurred while updating your password")
         } finally {
             setChangingPassword(false)
         }

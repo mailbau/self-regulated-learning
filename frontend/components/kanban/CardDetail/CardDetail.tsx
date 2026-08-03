@@ -2,75 +2,35 @@
 
 import { useState } from "react"
 import { X, Archive, Trash2 } from "lucide-react"
-import TaskInfo from "./TaskInfo"
+import CardInfo from "./CardInfo"
 import StartStopToggle from "./StartStopToggle"
 import DifficultyDropdown from "./DifficultyDropdown"
 import PriorityDropdown from "./PriorityDropdown"
 import Checklist from "./Checklist"
 import LearningStrategiesDropdown from "./LearningStrategiesDropdown"
 import StarRating from "./StarRating"
-import TaskNotes from "./TaskNotes"
+import CardNotes from "./CardNotes"
 import GradeInput from "./GradeInput"
 import LinkInput from "./LinkInput"
-import type { Checklists } from "@/types"
+import { useCardDetail } from "@/hooks/useCardDetail"
+import { COLUMN_TITLES } from "@/lib/constants"
+import type { Card, Checklists, Difficulty, Links, Priority } from "@/types"
 
-interface TaskDetailsProps {
+interface CardDetailProps {
     listName: string
-    boardId: string
-    card: {
-        id: string
-        title: string
-        sub_title: string
-        description?: string
-        difficulty: "easy" | "medium" | "hard" | "expert"
-        priority: "low" | "medium" | "high" | "critical"
-        learning_strategy: string
-        checklists?: Checklists[]
-        links?: { id: string; url: string }[]
-        rating?: number
-        notes?: string
-        pre_test_grade?: string
-        post_test_grade?: string
-        created_at: string
-        column_movement_times?: { [columnId: string]: string }
-    }
+    card: Card
     onClose: () => void
-    onUpdateTitle: (cardId: string, newTitle: string) => void
-    onUpdateSubTitle: (cardId: string, newSubTitle: string) => void
-    onUpdateDescription: (cardId: string, newDescription: string) => void
-    onUpdateDifficulty: (cardId: string, newDifficulty: "easy" | "medium" | "hard" | "expert") => void
-    onUpdatePriority: (cardId: string, newPriority: "low" | "medium" | "high" | "critical") => void
-    onUpdateLearningStrategy: (cardId: string, newLearningStrategy: string) => void
-    onUpdateChecklists: (cardId: string, updatedChecklists: Checklists[]) => void
-    onUpdateLinks: (cardId: string, updatedLinks: { id: string; url: string }[]) => void
-    onUpdateRating: (cardId: string, newRating: number) => void
-    onUpdateNotes: (cardId: string, newNotes: string) => void
-    onUpdatePreTestGrade: (cardId: string, newGrade: string) => void
-    onUpdatePostTestGrade: (cardId: string, newGrade: string) => void
+    onUpdateField: <K extends keyof Card>(cardId: string, field: K, value: Card[K]) => void
     onArchive: (cardId: string) => void
     onDelete: (cardId: string) => void
 }
 
-export default function TaskDetails({
-    listName,
-    boardId,
-    card,
-    onClose,
-    onUpdateTitle,
-    onUpdateSubTitle,
-    onUpdateDescription,
-    onUpdateDifficulty,
-    onUpdatePriority,
-    onUpdateLearningStrategy,
-    onUpdateChecklists,
-    onUpdateRating,
-    onUpdateNotes,
-    onUpdatePreTestGrade,
-    onUpdatePostTestGrade,
-    onArchive,
-    onDelete,
-    onUpdateLinks,
-}: TaskDetailsProps) {
+export default function CardDetail({ listName, card, onClose, onUpdateField, onArchive, onDelete }: CardDetailProps) {
+    const { isTimerActive, totalStudyMinutes, elapsedMinutes, toggleTimer, updateField } = useCardDetail({
+        card,
+        onUpdateField,
+    })
+
     const [difficulty, setDifficulty] = useState(card.difficulty)
     const [priority, setPriority] = useState(card.priority)
     const [learningStrategy, setLearningStrategy] = useState(card.learning_strategy ?? "Learning Strategies")
@@ -79,57 +39,57 @@ export default function TaskDetails({
     const [notes, setNotes] = useState(card.notes ?? "")
     const [preTestGrade, setPreTestGrade] = useState(card.pre_test_grade ?? "")
     const [postTestGrade, setPostTestGrade] = useState(card.post_test_grade ?? "")
-    const [links, setLinks] = useState<{ id: string; url: string }[]>(card.links ?? [])
-    const [isTimerActive, setIsTimerActive] = useState(false)
-    const isRatingEnabled = listName === "Reflection (Done)"
-    const isNotesEnabled = listName === "Reflection (Done)" || listName === "Controlling (Review)"
-    const isPreTestEnabled = listName !== "Reflection (Done)"
-    const isPostTestEnabled = listName === "Controlling (Review)" || listName === "Reflection (Done)"
-    const isDeleteEnabled = listName === "Reflection (Done)" || !isTimerActive
+    const [links, setLinks] = useState<Links[]>(card.links ?? [])
 
-    const handleDifficultyChange = (newDifficulty: "easy" | "medium" | "hard" | "expert") => {
+    const isRatingEnabled = listName === COLUMN_TITLES.REFLECTION
+    const isNotesEnabled = listName === COLUMN_TITLES.REFLECTION || listName === COLUMN_TITLES.CONTROLLING
+    const isPreTestEnabled = listName !== COLUMN_TITLES.REFLECTION
+    const isPostTestEnabled = listName === COLUMN_TITLES.CONTROLLING || listName === COLUMN_TITLES.REFLECTION
+    const isDeleteEnabled = listName === COLUMN_TITLES.REFLECTION || !isTimerActive
+
+    const handleDifficultyChange = (newDifficulty: Difficulty) => {
         setDifficulty(newDifficulty)
-        onUpdateDifficulty(card.id, newDifficulty)
+        updateField("difficulty", newDifficulty)
     }
 
-    const handlePriorityChange = (newPriority: "low" | "medium" | "high" | "critical") => {
+    const handlePriorityChange = (newPriority: Priority) => {
         setPriority(newPriority)
-        onUpdatePriority(card.id, newPriority)
+        updateField("priority", newPriority)
     }
 
     const handleLearningStrategyChange = (newLearningStrategy: string) => {
         setLearningStrategy(newLearningStrategy)
-        onUpdateLearningStrategy(card.id, newLearningStrategy)
+        updateField("learning_strategy", newLearningStrategy)
     }
 
     const handleUpdateChecklists = (updatedChecklists: Checklists[]) => {
         setChecklists(updatedChecklists)
-        onUpdateChecklists(card.id, updatedChecklists)
+        updateField("checklists", updatedChecklists)
     }
 
     const handleRatingChange = (newRating: number) => {
         setRating(newRating)
-        onUpdateRating(card.id, newRating)
+        updateField("rating", newRating)
     }
 
-    const handleUpdateNotes = (cardId: string, newNotes: string) => {
+    const handleUpdateNotes = (_cardId: string, newNotes: string) => {
         setNotes(newNotes)
-        onUpdateNotes(cardId, newNotes)
+        updateField("notes", newNotes)
     }
 
     const handleUpdatePreTestGrade = (newGrade: string) => {
         setPreTestGrade(newGrade)
-        onUpdatePreTestGrade(card.id, newGrade)
+        updateField("pre_test_grade", newGrade)
     }
 
     const handleUpdatePostTestGrade = (newGrade: string) => {
         setPostTestGrade(newGrade)
-        onUpdatePostTestGrade(card.id, newGrade)
+        updateField("post_test_grade", newGrade)
     }
 
-    const handleUpdateLinks = (updatedLinks: { id: string; url: string }[]) => {
+    const handleUpdateLinks = (updatedLinks: Links[]) => {
         setLinks(updatedLinks)
-        onUpdateLinks(card.id, updatedLinks)
+        updateField("links", updatedLinks)
     }
 
     // Get color based on list name
@@ -141,17 +101,11 @@ export default function TaskDetails({
                 return "bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900"
             case "Review":
                 return "bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900"
-            case "Reflection (Done)":
+            case COLUMN_TITLES.REFLECTION:
                 return "bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950 dark:to-green-900"
             default:
                 return "bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950"
         }
-    }
-
-    // Add this function to format dates
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString)
-        return date.toLocaleString()
     }
 
     return (
@@ -174,11 +128,11 @@ export default function TaskDetails({
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-white to-indigo-50/30 dark:from-slate-800 dark:to-indigo-950/30">
-                    <TaskInfo
+                    <CardInfo
                         card={card}
-                        onUpdateTitle={onUpdateTitle}
-                        onUpdateSubTitle={onUpdateSubTitle}
-                        onUpdateDescription={onUpdateDescription}
+                        onUpdateTitle={(_id, value) => updateField("title", value)}
+                        onUpdateSubTitle={(_id, value) => updateField("sub_title", value)}
+                        onUpdateDescription={(_id, value) => updateField("description", value)}
                     />
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
@@ -187,9 +141,11 @@ export default function TaskDetails({
                             <div className="flex flex-col sm:flex-row gap-4">
                                 <div className="flex-1">
                                     <StartStopToggle
-                                        cardId={card.id}
-                                        listName={listName}
-                                        onToggleStateChange={setIsTimerActive}
+                                        isActive={isTimerActive}
+                                        elapsedMinutes={elapsedMinutes}
+                                        totalMinutes={totalStudyMinutes}
+                                        onToggle={toggleTimer}
+                                        disabled={listName === COLUMN_TITLES.REFLECTION}
                                     />
                                 </div>
                                 <div className="w-full sm:w-64">
@@ -213,7 +169,7 @@ export default function TaskDetails({
                             </div>
 
                             <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg p-4 border border-indigo-200 dark:border-indigo-800 shadow-sm hover:shadow-md transition-all duration-300">
-                                <TaskNotes
+                                <CardNotes
                                     cardId={card.id}
                                     notes={notes}
                                     onUpdateNotes={handleUpdateNotes}

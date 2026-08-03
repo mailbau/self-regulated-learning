@@ -3,28 +3,23 @@
 import type React from "react"
 import { useEffect, useState } from "react"
 import { Droppable } from "react-beautiful-dnd"
-import Card from "./Card"
-import { getCourses } from "../utils/api"
+import KanbanCard from "./KanbanCard"
+import { getCourses } from "@/lib/api/admin"
+import { getAccessToken } from "@/lib/api/client"
 import { Plus, X, ChevronDown, AlertCircle } from "lucide-react"
-import type { Card as CardType } from "@/types"
+import type { Card, Difficulty } from "@/types"
 
-interface ListProps {
+interface KanbanColumnProps {
     id: string
     title: string
-    cards: CardType[]
+    cards: Card[]
     isAddingCard: boolean
-    onAddCard: (
-        listId: string,
-        courseCode: string,
-        courseName: string,
-        material: string,
-        difficulty: "easy" | "medium" | "hard" | "expert",
-    ) => void
+    onAddCard: (listId: string, courseCode: string, courseName: string, material: string, difficulty: Difficulty) => void
     onCancelAddCard: (listId: string) => void
-    onCardClick: (listId: string, card: CardType) => void
+    onCardClick: (listId: string, card: Card) => void
 }
 
-const List = ({ id, title, cards, onAddCard, onCardClick }: ListProps) => {
+export default function KanbanColumn({ id, title, cards, onAddCard, onCardClick }: KanbanColumnProps) {
     const [isAddingCard, setIsAddingCard] = useState(false)
     const [courseCode, setCourseCode] = useState("")
     const [courseName, setCourseName] = useState("")
@@ -34,13 +29,12 @@ const List = ({ id, title, cards, onAddCard, onCardClick }: ListProps) => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const token = localStorage.getItem("token")
-            if (token) {
-                const response = await getCourses()
-                if (response.ok) {
-                    const data = await response.json()
-                    setCourses(data) // Store courses
-                }
+            if (!getAccessToken()) return
+            try {
+                const data = await getCourses()
+                setCourses(data)
+            } catch {
+                // Course list is a convenience for the add-card form; leave it empty on failure.
             }
         }
 
@@ -131,7 +125,7 @@ const List = ({ id, title, cards, onAddCard, onCardClick }: ListProps) => {
                         >
                             {cards.length > 0 ? (
                                 cards.map((card, index) => (
-                                    <Card
+                                    <KanbanCard
                                         key={card.id}
                                         id={card.id}
                                         title={card.title}
@@ -150,7 +144,7 @@ const List = ({ id, title, cards, onAddCard, onCardClick }: ListProps) => {
                                     ${title === "Reflection (Done)" ? "bg-green-50 border-green-300 dark:bg-green-900/20 dark:border-green-700" : ""}
                                 `}>
                                     <div className="flex flex-col items-center gap-2">
-                                        <AlertCircle className={`h-5 w-5 
+                                        <AlertCircle className={`h-5 w-5
                                             ${title === "Planning (To Do)" ? "text-blue-500 dark:text-blue-400" : ""}
                                             ${title === "Monitoring (In Progress)" ? "text-amber-500 dark:text-amber-400" : ""}
                                             ${title === "Controlling (Review)" ? "text-purple-500 dark:text-purple-400" : ""}
@@ -247,6 +241,3 @@ const List = ({ id, title, cards, onAddCard, onCardClick }: ListProps) => {
         </div>
     )
 }
-
-export default List
-

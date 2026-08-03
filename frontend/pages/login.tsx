@@ -6,14 +6,14 @@ import { useState } from "react"
 import { useRouter } from "next/router"
 import Link from "next/link"
 import Player from "@/components/LottiePlayer"
-import { login } from "@/utils/api"
+import { login } from "@/lib/api/auth"
+import { setAccessToken, ApiError } from "@/lib/api/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle, GraduationCap, Loader2, LockKeyhole, User } from "lucide-react"
-import { setAccessToken } from "@/utils/auth"
+import { AlertCircle, LockKeyhole, User, Loader2 } from "lucide-react"
 
 export default function Login() {
     const [username, setUsername] = useState("")
@@ -28,23 +28,16 @@ export default function Login() {
         setError(null)
 
         try {
-            const response = await login(username, password)
+            const data = await login(username, password)
+            setAccessToken(data.token)
 
-            if (response.ok) {
-                const data = await response.json()
-                setAccessToken(data.token)
-
-                if (data.role === "admin") {
-                    router.push("/admin")
-                } else {
-                    router.push("/board")
-                }
+            if (data.role === "admin") {
+                router.push("/admin")
             } else {
-                const errorData = await response.json().catch(() => null)
-                setError(errorData?.message || "Invalid username or password")
+                router.push("/board")
             }
         } catch (err) {
-            setError("Connection error. Please try again.")
+            setError(err instanceof ApiError ? err.message : "Connection error. Please try again.")
         } finally {
             setLoading(false)
         }

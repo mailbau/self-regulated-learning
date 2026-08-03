@@ -6,7 +6,7 @@ import { useState, useEffect } from "react"
 import { User, LogOut, Bell, Menu, X, GraduationCap, BookOpen, Lightbulb, Users, ClockIcon } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import { getCurrentUser, logout } from "@/utils/api"
+import { getCurrentUser, logout } from "@/lib/api/auth"
 
 export type AdminSection = "courses" | "learningStrategies" | "users" | "logs"
 
@@ -51,10 +51,8 @@ const Navbar = ({
                 }
 
                 const userData = await getCurrentUser()
-                console.log("User data:", userData)
                 setUser(userData)
-            } catch (error) {
-                console.error("Error fetching user:", error)
+            } catch {
                 router.push("/login")
             } finally {
                 setLoading(false)
@@ -67,8 +65,8 @@ const Navbar = ({
     const handleLogout = async () => {
         try {
             await logout() // call your API logout
-        } catch (error) {
-            console.error("Error during logout:", error)
+        } catch {
+            // Best-effort server-side logout; local session is cleared regardless.
         } finally {
             localStorage.removeItem("token")
             router.push("/login")

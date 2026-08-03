@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle, Lock, Loader2 } from "lucide-react"
-import { resetPassword } from "@/utils/api"
+import { resetPassword } from "@/lib/api/auth"
+import { ApiError } from "@/lib/api/client"
 
 export default function ResetPassword() {
     const [password, setPassword] = useState("")
@@ -48,20 +49,14 @@ export default function ResetPassword() {
         }
 
         try {
-            const response = await resetPassword(token, password)
-
-            if (response.ok) {
-                setSuccess(true)
-                // Redirect to login page after 3 seconds
-                setTimeout(() => {
-                    router.push("/login")
-                }, 3000)
-            } else {
-                const data = await response.json()
-                setError(data.error || "Failed to reset password")
-            }
+            await resetPassword(token, password)
+            setSuccess(true)
+            // Redirect to login page after 3 seconds
+            setTimeout(() => {
+                router.push("/login")
+            }, 3000)
         } catch (err) {
-            setError("Connection error. Please try again.")
+            setError(err instanceof ApiError ? err.message : "Failed to reset password")
         } finally {
             setLoading(false)
         }

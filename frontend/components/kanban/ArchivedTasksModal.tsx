@@ -279,4 +279,3 @@ export default function ArchivedTasksModal({ archivedTasks, onClose, onRestore, 
         </div>
     )
 }
-

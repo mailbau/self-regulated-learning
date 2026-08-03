@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { getCourses, deleteCourse } from "@/utils/api"
+import { getCourses, deleteCourse } from "@/lib/api/admin"
+import { ApiError } from "@/lib/api/client"
 import CourseForm from "./CoursesForm"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -18,12 +19,7 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog"
-
-interface Course {
-    id: string
-    course_code: string
-    course_name: string
-}
+import type { Course } from "@/types"
 
 export default function CoursesList() {
     const [courses, setCourses] = useState<Course[]>([])
@@ -40,24 +36,12 @@ export default function CoursesList() {
     const fetchCourses = async () => {
         try {
             setLoading(true)
-            const token = localStorage.getItem("token")
-            if (!token) {
-                setError("No token found. Please log in.")
-                return
-            }
-
-            const response = await getCourses()
-            if (!response.ok) throw new Error("Failed to fetch courses.")
-
-            const data = await response.json()
-            // Sort courses by creation time (newest first)
-            const sortedData = data.sort((a: any, b: any) => {
-                return new Date(b.createdAt || b.created_at).getTime() - new Date(a.createdAt || a.created_at).getTime()
-            })
-            setCourses(sortedData)
-            setFilteredCourses(sortedData)
-        } catch (err: any) {
-            setError(err.message || "An error occurred.")
+            setError(null)
+            const data = await getCourses()
+            setCourses(data)
+            setFilteredCourses(data)
+        } catch (err) {
+            setError(err instanceof ApiError ? err.message : "An error occurred.")
         } finally {
             setLoading(false)
         }
@@ -86,18 +70,10 @@ export default function CoursesList() {
     const handleDeleteCourse = async (course: Course) => {
         try {
             setDeletingId(course.course_code)
-            const token = localStorage.getItem("token")
-            if (!token) {
-                setError("No token found. Please log in.")
-                return
-            }
-
-            const response = await deleteCourse(course.course_code)
-            if (!response.ok) throw new Error("Failed to delete course.")
-
+            await deleteCourse(course.course_code)
             fetchCourses()
-        } catch (err: any) {
-            setError(err.message || "An error occurred.")
+        } catch (err) {
+            setError(err instanceof ApiError ? err.message : "An error occurred.")
         } finally {
             setDeletingId(null)
             setDeletingCourse(null)
@@ -223,7 +199,7 @@ export default function CoursesList() {
                             <div className="space-y-3">
                                 {currentCourses.map((course) => (
                                     <div
-                                        key={course.id}
+                                        key={course._id}
                                         className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
                                     >
                                         <div>
@@ -290,4 +266,3 @@ export default function CoursesList() {
         </div>
     )
 }
-

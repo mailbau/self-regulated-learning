@@ -1,8 +1,9 @@
 "use client"
 
+import type React from "react"
 import { motion } from "framer-motion"
 import { Activity, Layers, Award } from "lucide-react"
-import type { ProgressReport } from "./types"
+import type { ProgressReport } from "@/types"
 
 interface ProgressSummaryProps {
     progress: ProgressReport
@@ -63,7 +64,6 @@ export default function ProgressSummary({ progress }: ProgressSummaryProps) {
     )
 }
 
-// CheckIcon component
 function CheckIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg
@@ -81,4 +81,4 @@ function CheckIcon(props: React.SVGProps<SVGSVGElement>) {
             <path d="M20 6 9 17l-5-5" />
         </svg>
     )
-} 
+}

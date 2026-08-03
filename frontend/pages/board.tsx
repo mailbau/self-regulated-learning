@@ -1,6 +1,6 @@
 "use client"
 
-import Board from "@/components/Board/Board"
+import KanbanBoard from "@/components/kanban/KanbanBoard"
 import Navbar from "@/components/Navbar"
 import Chatbot from "@/components/Chatbot/Chatbot"
 import { useState, useEffect } from "react"
@@ -20,7 +20,7 @@ export default function BoardPage() {
             <Navbar />
             <main className="flex-grow px-4 md:px-6 lg:px-8 py-6">
                 <div className="max-w-[1600px] mx-auto">
-                    <Board />
+                    <KanbanBoard />
                 </div>
             </main>
             <footer className="py-4 px-6 text-center text-sm text-indigo-600 dark:text-indigo-400 border-t border-indigo-200 dark:border-indigo-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">

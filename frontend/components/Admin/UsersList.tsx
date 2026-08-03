@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { getAllUsers } from "@/utils/api"
+import { getAllUsers } from "@/lib/api/admin"
+import { ApiError } from "@/lib/api/client"
 import UserDetails from "./UserDetails"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,14 +10,7 @@ import { AlertCircle, Eye, MailIcon, Search, User, Users } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
-
-interface UserType {
-    _id: string
-    username: string
-    first_name: string
-    last_name: string
-    email: string
-}
+import type { User as UserType } from "@/types"
 
 export default function UsersList() {
     const [users, setUsers] = useState<UserType[]>([])
@@ -31,21 +25,12 @@ export default function UsersList() {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const token = localStorage.getItem("token")
-                if (!token) throw new Error("User not authenticated")
-
-                const response = await getAllUsers()
-                if (!response.ok) throw new Error("Failed to fetch users")
-
-                const data: UserType[] = await response.json()
-                // Sort users by creation time (newest first)
-                const sortedData = data.sort((a: any, b: any) => {
-                    return new Date(b.createdAt || b.created_at).getTime() - new Date(a.createdAt || a.created_at).getTime()
-                })
-                setUsers(sortedData)
-                setFilteredUsers(sortedData)
-            } catch (err: any) {
-                setError(err.message)
+                setLoading(true)
+                const data = await getAllUsers()
+                setUsers(data)
+                setFilteredUsers(data)
+            } catch (err) {
+                setError(err instanceof ApiError ? err.message : "Failed to fetch users")
             } finally {
                 setLoading(false)
             }
@@ -196,4 +181,3 @@ export default function UsersList() {
         </div>
     )
 }
-

@@ -5,7 +5,8 @@ import type { MessageResponse } from "./auth"
 // --- Courses ---
 
 export async function getCourses(): Promise<Course[]> {
-    return apiRequest<Course[]>("/courses")
+    const courses = await apiRequest<Course[]>("/courses")
+    return [...courses].sort((a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime())
 }
 
 export async function createCourse(course: { course_code: string; course_name: string }): Promise<MessageResponse> {
@@ -39,15 +40,18 @@ interface RawLearningStrategy {
     _id: string
     learning_strat_name: string
     description?: string | null
+    created_at?: string
 }
 
 function normalizeStrategy(raw: RawLearningStrategy): LearningStrategy {
-    return { id: raw._id, name: raw.learning_strat_name, description: raw.description }
+    return { id: raw._id, name: raw.learning_strat_name, description: raw.description, created_at: raw.created_at }
 }
 
 export async function getStrategies(): Promise<LearningStrategy[]> {
     const raw = await apiRequest<RawLearningStrategy[]>("/learningstrats")
-    return raw.map(normalizeStrategy)
+    return raw
+        .map(normalizeStrategy)
+        .sort((a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime())
 }
 
 export async function getStrategy(id: string): Promise<LearningStrategy> {
@@ -84,7 +88,8 @@ export async function deleteStrategy(id: string): Promise<MessageResponse> {
 // --- Users ---
 
 export async function getAllUsers(): Promise<User[]> {
-    return apiRequest<User[]>("/users")
+    const users = await apiRequest<User[]>("/users")
+    return [...users].sort((a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime())
 }
 
 export async function getUserByUsername(username: string): Promise<User> {

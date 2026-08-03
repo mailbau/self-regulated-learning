@@ -1,16 +1,16 @@
 "use client"
 
 import { useState } from "react"
-import DashboardModal from "@/components/Dashboard/DashboardModal"
+import AnalyticsModal from "@/components/analytics/AnalyticsModal"
 import { BarChart3, Archive } from "lucide-react"
 
-interface BoardHeaderProps {
+interface KanbanBoardHeaderProps {
     boardName: string
     onShowArchived: () => void
 }
 
-export default function BoardHeader({ boardName, onShowArchived }: BoardHeaderProps) {
-    const [isDashboardOpen, setIsDashboardOpen] = useState(false)
+export default function KanbanBoardHeader({ boardName, onShowArchived }: KanbanBoardHeaderProps) {
+    const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false)
 
     return (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 md:p-6 border-b border-indigo-200 dark:border-indigo-800 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950 shadow-sm">
@@ -20,7 +20,7 @@ export default function BoardHeader({ boardName, onShowArchived }: BoardHeaderPr
             <div className="flex gap-3">
                 <button
                     className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white px-4 py-2 rounded-lg border border-indigo-400 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                    onClick={() => setIsDashboardOpen(true)}
+                    onClick={() => setIsAnalyticsOpen(true)}
                 >
                     <BarChart3 size={18} />
                     <span className="hidden sm:inline">Analytics</span>
@@ -34,7 +34,7 @@ export default function BoardHeader({ boardName, onShowArchived }: BoardHeaderPr
                 </button>
             </div>
 
-            <DashboardModal isOpen={isDashboardOpen} onClose={() => setIsDashboardOpen(false)} />
+            <AnalyticsModal isOpen={isAnalyticsOpen} onClose={() => setIsAnalyticsOpen(false)} />
         </div>
     )
 }

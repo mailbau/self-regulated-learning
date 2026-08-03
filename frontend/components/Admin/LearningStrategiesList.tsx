@@ -10,7 +10,9 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Input } from "@/components/ui/input"
-import { getAllLearningStrategies, deleteLearningStrategy } from "@/utils/api"
+import { getStrategies, deleteStrategy } from "@/lib/api/admin"
+import { ApiError } from "@/lib/api/client"
+import type { LearningStrategy } from "@/types"
 import {
     Dialog,
     DialogContent,
@@ -19,13 +21,6 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog"
-
-interface LearningStrategy {
-    id: string
-    name: string
-    description?: string
-    createdAt: string
-}
 
 export default function LearningStrategiesList() {
     const [strategies, setStrategies] = useState<LearningStrategy[]>([])
@@ -39,46 +34,15 @@ export default function LearningStrategiesList() {
     const [currentPage, setCurrentPage] = useState(1)
     const rowsPerPage = 5
 
-    // Fetch strategies from the API
     const fetchStrategies = async () => {
         try {
             setLoading(true)
             setError(null)
-            const token = localStorage.getItem("token")
-            if (!token) {
-                setError("No token found. Please log in.")
-                return
-            }
-
-            console.log('Fetching strategies with token:', token.substring(0, 10) + '...');
-            const response = await getAllLearningStrategies()
-            console.log('Response status:', response.status);
-
-            if (!response.ok) {
-                const errorData = await response.text();
-                console.error('Error response:', errorData);
-                throw new Error(`Failed to fetch learning strategies: ${response.status} ${response.statusText}`);
-            }
-
-            const data = await response.json()
-            console.log('Fetched strategies data:', data);
-
-            // Map the data to match our interface and sort by creation time
-            const mappedStrategies = data.map((strategy: any) => ({
-                id: strategy._id || strategy.id,
-                name: strategy.learning_strat_name || strategy.name,
-                description: strategy.description,
-                createdAt: strategy.createdAt || strategy.created_at
-            })).sort((a: any, b: any) => {
-                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            });
-
-            console.log('Mapped strategies:', mappedStrategies);
-            setStrategies(mappedStrategies)
-            setFilteredStrategies(mappedStrategies)
-        } catch (err: any) {
-            console.error('Error in fetchStrategies:', err);
-            setError(err.message || "An error occurred while fetching strategies")
+            const data = await getStrategies()
+            setStrategies(data)
+            setFilteredStrategies(data)
+        } catch (err) {
+            setError(err instanceof ApiError ? err.message : "An error occurred while fetching strategies")
         } finally {
             setLoading(false)
         }
@@ -107,22 +71,10 @@ export default function LearningStrategiesList() {
     const handleDelete = async (strategy: LearningStrategy) => {
         try {
             setDeletingId(strategy.id)
-            setError(null)
-            const token = localStorage.getItem("token")
-            if (!token) {
-                setError("No token found. Please log in.")
-                return
-            }
-
-            const response = await deleteLearningStrategy(strategy.id)
-            if (!response.ok) {
-                throw new Error("Failed to delete learning strategy")
-            }
-
-            // Refresh the list after successful deletion
+            await deleteStrategy(strategy.id)
             fetchStrategies()
-        } catch (err: any) {
-            setError(err.message || "An error occurred while deleting the strategy")
+        } catch (err) {
+            setError(err instanceof ApiError ? err.message : "An error occurred while deleting the strategy")
         } finally {
             setDeletingId(null)
             setDeletingStrategy(null)
@@ -142,12 +94,7 @@ export default function LearningStrategiesList() {
                 </Alert>
             )}
 
-            {/* Form for adding a new strategy */}
-            <LearningStrategyForm
-                onStrategySaved={() => {
-                    fetchStrategies()
-                }}
-            />
+            <LearningStrategyForm onStrategySaved={() => fetchStrategies()} />
 
             {/* Edit Modal */}
             <Dialog open={!!editingStrategy} onOpenChange={() => setEditingStrategy(null)}>
@@ -185,9 +132,6 @@ export default function LearningStrategiesList() {
                         <div className="py-4">
                             <div className="space-y-2">
                                 <p className="font-medium">{deletingStrategy.name}</p>
-                                {deletingStrategy.description && (
-                                    <p className="text-sm text-muted-foreground">{deletingStrategy.description}</p>
-                                )}
                             </div>
                         </div>
                     )}
@@ -216,17 +160,17 @@ export default function LearningStrategiesList() {
             <Card>
                 <CardHeader>
                     <CardTitle>Strategy List</CardTitle>
-                    <CardDescription>Manage your learning strategies</CardDescription>
+                    <CardDescription>Manage your available learning strategies</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {/* Search Bar */}
                     <div className="relative mb-4">
-                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
+                            type="search"
                             placeholder="Search strategies..."
+                            className="pl-8"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-8"
                         />
                     </div>
 
@@ -234,7 +178,10 @@ export default function LearningStrategiesList() {
                         <div className="space-y-3">
                             {[1, 2, 3].map((i) => (
                                 <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
-                                    <Skeleton className="h-5 w-40" />
+                                    <div className="space-y-1">
+                                        <Skeleton className="h-5 w-40" />
+                                        <Skeleton className="h-4 w-24" />
+                                    </div>
                                     <Skeleton className="h-9 w-20" />
                                 </div>
                             ))}
@@ -244,7 +191,7 @@ export default function LearningStrategiesList() {
                             <Lightbulb className="h-12 w-12 text-muted-foreground mb-4" />
                             <h3 className="text-lg font-medium">No strategies found</h3>
                             <p className="text-sm text-muted-foreground mt-1">
-                                {searchQuery ? "No strategies match your search." : "Add your first learning strategy using the form above."}
+                                {searchQuery ? "No strategies match your search." : "Add your first strategy using the form above."}
                             </p>
                         </div>
                     ) : (
@@ -258,7 +205,7 @@ export default function LearningStrategiesList() {
                                         <div>
                                             <p className="font-medium">{strategy.name}</p>
                                             {strategy.description && (
-                                                <p className="text-sm text-muted-foreground mt-1">{strategy.description}</p>
+                                                <p className="text-sm text-muted-foreground">{strategy.description}</p>
                                             )}
                                         </div>
                                         <div className="flex items-center gap-2">
@@ -321,4 +268,3 @@ export default function LearningStrategiesList() {
         </div>
     )
 }
-

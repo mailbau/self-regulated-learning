@@ -1,7 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { motion } from "framer-motion"
+import { useEffect } from "react"
 import { BarChart2, PieChart, LineChart, BookOpen } from "lucide-react"
 import { Bar, Doughnut } from "react-chartjs-2"
 import {
@@ -14,27 +13,19 @@ import {
     BarElement,
     Title,
 } from "chart.js"
-import type { ProgressReport, ChartColors, ChartBorderColors, CoursePerformanceProps } from "./types"
+import type { TooltipItem } from "chart.js"
+import type { ChartColors, ChartBorderColors, TaskDistributionProps as BaseTaskDistributionProps, CoursePerformanceProps } from "@/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import type { TooltipItem } from "chart.js"
 
 // Register ChartJS components
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title)
 
-interface TaskDistributionProps {
-    listReport: {
-        [key: string]: number
-    }
-    topStrategies: {
-        strategy: string
-        count: number
-        most_used_in: string
-    }[]
+interface TaskDistributionProps extends BaseTaskDistributionProps {
     courseStats: CoursePerformanceProps["courseStats"]
 }
 
-export default function TaskDistribution({ listReport, topStrategies, courseStats }: TaskDistributionProps) {
+export default function TaskDistributionChart({ listReport, topStrategies, courseStats }: TaskDistributionProps) {
     // Define chart colors with better contrast and visual appeal
     const chartColors: ChartColors = {
         planning: "rgba(56, 189, 248, 0.85)", // Sky blue
@@ -123,7 +114,7 @@ export default function TaskDistribution({ listReport, topStrategies, courseStat
                 padding: 12,
                 cornerRadius: 8,
                 callbacks: {
-                    label: function (context: any) {
+                    label: (context: TooltipItem<"bar">) => {
                         const strategy = topStrategies[context.dataIndex]
                         return [
                             `Times Used: ${strategy.count}`,
@@ -455,4 +446,4 @@ export default function TaskDistribution({ listReport, topStrategies, courseStat
             </CardContent>
         </Card>
     )
-} 
+}

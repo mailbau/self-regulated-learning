@@ -8,15 +8,9 @@ import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
-import { getAllLogs } from "@/utils/api"
-
-interface Log {
-    id: string
-    description: string
-    created_at: string
-    action_type: "login" | "logout"
-    username: string
-}
+import { getAllLogs } from "@/lib/api/admin"
+import { ApiError } from "@/lib/api/client"
+import type { Log } from "@/types"
 
 export default function LogsList() {
     const [logs, setLogs] = useState<Log[]>([])
@@ -31,20 +25,11 @@ export default function LogsList() {
         const fetchLogs = async () => {
             try {
                 setLoading(true)
-                const token = localStorage.getItem("token")
-                if (!token) {
-                    setError("No token found. Please log in.")
-                    return
-                }
-
-                const response = await getAllLogs()
-                if (!response.ok) throw new Error("Failed to fetch logs")
-
-                const data = await response.json()
+                const data = await getAllLogs()
                 setLogs(data)
                 setFilteredLogs(data)
-            } catch (err: any) {
-                setError(err.message || "An error occurred")
+            } catch (err) {
+                setError(err instanceof ApiError ? err.message : "An error occurred")
             } finally {
                 setLoading(false)
             }
@@ -73,7 +58,7 @@ export default function LogsList() {
         try {
             const date = new Date(dateString)
             return format(date, "MMM dd, yyyy HH:mm:ss")
-        } catch (error) {
+        } catch {
             return dateString
         }
     }
@@ -159,15 +144,11 @@ export default function LogsList() {
                                 <tbody>
                                     {currentLogs.map((log, index) => (
                                         <tr key={log.id} className="border-b hover:bg-muted/50 transition-colors">
-                                            <td className="py-3 px-4">{indexOfFirstLog + index + 1}</td> {/* Adjusted index */}
+                                            <td className="py-3 px-4">{indexOfFirstLog + index + 1}</td>
                                             <td className="py-3 px-4">{log.description}</td>
                                             <td className="py-3 px-4">
                                                 <Badge variant={log.action_type === "login" ? "default" : "secondary"} className="font-normal">
-                                                    {log.action_type === "login" ? (
-                                                        <UserCheck className="mr-1 h-3 w-3" />
-                                                    ) : (
-                                                        <UserCheck className="mr-1 h-3 w-3" />
-                                                    )}
+                                                    <UserCheck className="mr-1 h-3 w-3" />
                                                     {log.action_type}
                                                 </Badge>
                                             </td>

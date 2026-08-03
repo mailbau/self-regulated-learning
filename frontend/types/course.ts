@@ -10,6 +10,7 @@ export interface LearningStrategy {
     id: string
     name: string
     description?: string | null
+    created_at?: string
 }
 
 export interface LearningStrategyInput {

@@ -1,7 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { getUserByUsername, getBoardByUser, getCardMovements } from "@/utils/api"
+import { getUserByUsername } from "@/lib/api/admin"
+import { getBoardByUser } from "@/lib/api/board"
+import { getSessionsForCard } from "@/lib/api/study-sessions"
+import { ApiError } from "@/lib/api/client"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -19,43 +22,12 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-
-interface UserDetails {
-    _id: string
-    username: string
-    first_name: string
-    last_name: string
-    email: string
-    role?: string
-}
-
-interface Board {
-    id: string
-    name: string
-    lists: {
-        id: string
-        title: string
-        cards: {
-            id: string
-            title: string
-            sub_title: string
-            difficulty: string
-            priority: string
-            created_at: string
-            column_movements?: CardMovement[]
-        }[]
-    }[]
-}
+import type { Board, ColumnMovement, User as UserType } from "@/types"
+import { COLUMN_TITLES } from "@/lib/constants"
 
 interface UserDetailsProps {
     username: string
     onClose: () => void
-}
-
-interface CardMovement {
-    fromColumn: string
-    toColumn: string
-    timestamp: string
 }
 
 interface CardMovementModalProps {
@@ -65,42 +37,36 @@ interface CardMovementModalProps {
     onClose: () => void
 }
 
-interface StudySession {
-    total_study_time_minutes: number
+// Map list titles to the compact column ids used by movement records
+const columnNameMap: { [key: string]: string } = {
+    [COLUMN_TITLES.PLANNING]: "list1",
+    [COLUMN_TITLES.MONITORING]: "list2",
+    [COLUMN_TITLES.CONTROLLING]: "list3",
+    [COLUMN_TITLES.REFLECTION]: "list4",
+}
+
+const displayNameMap: { [key: string]: string } = {
+    list1: COLUMN_TITLES.PLANNING,
+    list2: COLUMN_TITLES.MONITORING,
+    list3: COLUMN_TITLES.CONTROLLING,
+    list4: COLUMN_TITLES.REFLECTION,
 }
 
 function CardMovementModal({ cardId, board, isOpen, onClose }: CardMovementModalProps) {
-    const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [movements, setMovements] = useState<CardMovement[]>([])
+    const [movements, setMovements] = useState<ColumnMovement[]>([])
     const [currentPage, setCurrentPage] = useState(1)
     const [columnTimes, setColumnTimes] = useState<{ [key: string]: number }>({})
     const rowsPerPage = 5
-
-    // Map list titles to column names
-    const columnNameMap: { [key: string]: string } = {
-        "Planning (To Do)": "list1",
-        "Monitoring (In Progress)": "list2",
-        "Controlling (Review)": "list3",
-        "Reflection (Done)": "list4"
-    }
-
-    // Reverse mapping for display
-    const displayNameMap: { [key: string]: string } = {
-        "list1": "Planning (To Do)",
-        "list2": "Monitoring (In Progress)",
-        "list3": "Controlling (Review)",
-        "list4": "Reflection (Done)"
-    }
 
     useEffect(() => {
         if (!isOpen || !board) return
 
         try {
             // Find the card in the board data
-            let cardMovements: CardMovement[] = []
+            let cardMovements: ColumnMovement[] = []
             for (const list of board.lists) {
-                const card = list.cards.find(c => c.id === cardId)
+                const card = list.cards.find((c) => c.id === cardId)
                 if (card?.column_movements) {
                     cardMovements = card.column_movements
                     break
@@ -110,15 +76,13 @@ function CardMovementModal({ cardId, board, isOpen, onClose }: CardMovementModal
 
             // Calculate time spent in each column
             const times: { [key: string]: number } = {}
-
-            // Initialize times for all columns
-            board.lists.forEach(list => {
+            board.lists.forEach((list) => {
                 times[list.title] = 0
             })
 
             // Sort movements by timestamp to ensure correct order
-            const sortedMovements = [...cardMovements].sort((a, b) =>
-                new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+            const sortedMovements = [...cardMovements].sort(
+                (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
             )
 
             // Calculate duration for each movement
@@ -127,15 +91,11 @@ function CardMovementModal({ cardId, board, isOpen, onClose }: CardMovementModal
                 const nextMovement = sortedMovements[i + 1]
 
                 const startTime = new Date(currentMovement.timestamp).getTime()
-                const endTime = nextMovement
-                    ? new Date(nextMovement.timestamp).getTime()
-                    : new Date().getTime()
-
+                const endTime = nextMovement ? new Date(nextMovement.timestamp).getTime() : Date.now()
                 const duration = endTime - startTime
 
-                // Find the list title that corresponds to this column
-                const listTitle = Object.entries(columnNameMap).find(([_, colName]) =>
-                    colName === currentMovement.toColumn
+                const listTitle = Object.entries(columnNameMap).find(
+                    ([, colName]) => colName === currentMovement.toColumn
                 )?.[0]
 
                 if (listTitle) {
@@ -143,13 +103,9 @@ function CardMovementModal({ cardId, board, isOpen, onClose }: CardMovementModal
                 }
             }
 
-            console.log('Column times:', times) // Debug log
             setColumnTimes(times)
-        } catch (err: any) {
-            console.error('Error calculating times:', err) // Debug log
-            setError(err.message)
-        } finally {
-            setLoading(false)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to calculate column times")
         }
     }, [cardId, board, isOpen])
 
@@ -197,10 +153,6 @@ function CardMovementModal({ cardId, board, isOpen, onClose }: CardMovementModal
                         <AlertCircle className="h-4 w-4" />
                         <AlertDescription>{error}</AlertDescription>
                     </Alert>
-                ) : loading ? (
-                    <div className="space-y-4">
-                        <Skeleton className="h-[200px] w-full" />
-                    </div>
                 ) : movements.length === 0 ? (
                     <p className="text-center text-muted-foreground py-4">No movement history available</p>
                 ) : (
@@ -275,7 +227,7 @@ function CardMovementModal({ cardId, board, isOpen, onClose }: CardMovementModal
 }
 
 export default function UserDetails({ username, onClose }: UserDetailsProps) {
-    const [user, setUser] = useState<UserDetails | null>(null)
+    const [user, setUser] = useState<UserType | null>(null)
     const [board, setBoard] = useState<Board | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -287,27 +239,13 @@ export default function UserDetails({ username, onClose }: UserDetailsProps) {
         const fetchUserDetails = async () => {
             try {
                 setLoading(true)
-                const token = localStorage.getItem("token")
-                if (!token) {
-                    setError("User not authenticated")
-                    return
-                }
-
-                // Fetch user details by username
-                const userRes = await getUserByUsername(username)
-                if (!userRes.ok) throw new Error("Failed to fetch user details")
-
-                const foundUser = await userRes.json()
+                const foundUser = await getUserByUsername(username)
                 setUser(foundUser)
 
-                // Fetch board using the user's ID
-                const boardRes = await getBoardByUser(foundUser._id)
-                if (!boardRes.ok) throw new Error("Failed to fetch user's board")
-
-                const boardData = await boardRes.json()
+                const boardData = await getBoardByUser(foundUser._id)
                 setBoard(boardData)
-            } catch (err: any) {
-                setError(err.message)
+            } catch (err) {
+                setError(err instanceof ApiError ? err.message : "Failed to fetch user details")
             } finally {
                 setLoading(false)
             }
@@ -316,31 +254,19 @@ export default function UserDetails({ username, onClose }: UserDetailsProps) {
         fetchUserDetails()
     }, [username])
 
-    // Add new useEffect for fetching study times
+    // Fetch study times for all cards once the board has loaded
     useEffect(() => {
         const fetchStudyTimes = async () => {
             if (!board) return
 
             const times: { [key: string]: number } = {}
-            const token = localStorage.getItem("token")
-            if (!token) return
-
-            // Fetch study times for all cards
             for (const list of board.lists) {
                 for (const card of list.cards) {
                     try {
-                        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/study-sessions/card/${card.id}`, {
-                            headers: {
-                                Authorization: `Bearer ${token}`,
-                            },
-                        })
-
-                        if (!response.ok) continue
-
-                        const data: StudySession = await response.json()
+                        const data = await getSessionsForCard(card.id)
                         times[card.id] = data.total_study_time_minutes
-                    } catch (error) {
-                        console.error(`Error fetching study time for card ${card.id}:`, error)
+                    } catch {
+                        // No study time available for this card; leave it out of the map.
                     }
                 }
             }
@@ -534,4 +460,3 @@ export default function UserDetails({ username, onClose }: UserDetailsProps) {
         </Dialog>
     )
 }
-

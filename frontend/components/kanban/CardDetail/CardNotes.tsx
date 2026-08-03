@@ -3,14 +3,14 @@
 import { useState, useEffect } from "react"
 import { FileText, AlertCircle } from "lucide-react"
 
-interface TaskNotesProps {
+interface CardNotesProps {
     cardId: string
     notes?: string
     onUpdateNotes: (cardId: string, newNotes: string) => void
     isDisabled?: boolean
 }
 
-export default function TaskNotes({ cardId, notes = "", onUpdateNotes, isDisabled = false }: TaskNotesProps) {
+export default function CardNotes({ cardId, notes = "", onUpdateNotes, isDisabled = false }: CardNotesProps) {
     const [noteText, setNoteText] = useState(notes)
 
     useEffect(() => {

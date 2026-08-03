@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 
-interface TaskInfoProps {
+interface CardInfoProps {
     card: {
         id: string
         title: string
@@ -14,7 +14,7 @@ interface TaskInfoProps {
     onUpdateDescription: (cardId: string, newDescription: string) => void
 }
 
-export default function TaskInfo({ card, onUpdateTitle, onUpdateSubTitle, onUpdateDescription }: TaskInfoProps) {
+export default function CardInfo({ card, onUpdateTitle, onUpdateSubTitle, onUpdateDescription }: CardInfoProps) {
     const [title, setTitle] = useState(card.title)
     const [subTitle, setSubTitle] = useState(card.sub_title)
     const [description, setDescription] = useState(card.description || "")

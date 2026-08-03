@@ -2,21 +2,16 @@
 
 import { useState, useEffect } from "react"
 import { Plus, Trash2, Check, ExternalLink } from "lucide-react"
-
-// Match the structure that would be stored in the database
-interface Link {
-    id: string
-    url: string
-}
+import type { Links } from "@/types"
 
 interface LinkInputProps {
     cardId: string
-    links?: Link[]
-    onUpdateLinks: (updatedLinks: Link[]) => void
+    links?: Links[]
+    onUpdateLinks: (updatedLinks: Links[]) => void
 }
 
 export default function LinkInput({ cardId, links = [], onUpdateLinks }: LinkInputProps) {
-    const [localLinks, setLocalLinks] = useState<Link[]>(links)
+    const [localLinks, setLocalLinks] = useState<Links[]>(links)
     const [showInput, setShowInput] = useState(false)
     const [newLinkUrl, setNewLinkUrl] = useState("")
     const [isValidUrl, setIsValidUrl] = useState(true)
@@ -31,13 +26,13 @@ export default function LinkInput({ cardId, links = [], onUpdateLinks }: LinkInp
             // Check if it's a valid URL format
             new URL(url)
             return true
-        } catch (e) {
+        } catch {
             // Try adding https:// prefix if missing
             if (!url.startsWith("http://") && !url.startsWith("https://")) {
                 try {
                     new URL(`https://${url}`)
                     return true
-                } catch (e) {
+                } catch {
                     return false
                 }
             }
@@ -63,7 +58,7 @@ export default function LinkInput({ cardId, links = [], onUpdateLinks }: LinkInp
             return
         }
 
-        const newLink: Link = {
+        const newLink: Links = {
             id: `link-${Date.now()}`,
             url: formattedUrl,
         }

@@ -10,8 +10,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle, AtSign, GraduationCap, Loader2 } from "lucide-react"
-import { requestReset } from "@/utils/api"
+import { AlertCircle, AtSign, Loader2 } from "lucide-react"
+import { requestReset } from "@/lib/api/auth"
+import { ApiError } from "@/lib/api/client"
 
 export default function ForgotPassword() {
     const [email, setEmail] = useState("")
@@ -27,16 +28,10 @@ export default function ForgotPassword() {
         setSuccess(false)
 
         try {
-            const response = await requestReset(email)
-
-            if (response.ok) {
-                setSuccess(true)
-            } else {
-                const data = await response.json()
-                setError(data.error || "Failed to request password reset")
-            }
+            await requestReset(email)
+            setSuccess(true)
         } catch (err) {
-            setError("Connection error. Please try again.")
+            setError(err instanceof ApiError ? err.message : "Failed to request password reset")
         } finally {
             setLoading(false)
         }

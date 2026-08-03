@@ -1,14 +1,16 @@
 "use client"
 
+import type React from "react"
 import { useState, useRef, useEffect } from "react"
-import { ChevronDown, Clock, AlertTriangle, AlertCircle } from "lucide-react"
+import { ChevronDown, Zap, Dumbbell, Brain, Award } from "lucide-react"
+import type { Difficulty } from "@/types"
 
-interface PriorityDropdownProps {
-    priority: "low" | "medium" | "high" | "critical"
-    onChange: (newPriority: "low" | "medium" | "high" | "critical") => void
+interface DifficultyDropdownProps {
+    difficulty: Difficulty
+    onChange: (newDifficulty: Difficulty) => void
 }
 
-export default function PriorityDropdown({ priority, onChange }: PriorityDropdownProps) {
+export default function DifficultyDropdown({ difficulty, onChange }: DifficultyDropdownProps) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -25,50 +27,50 @@ export default function PriorityDropdown({ priority, onChange }: PriorityDropdow
         }
     }, [])
 
-    const priorityOptions = [
+    const difficultyOptions: { value: Difficulty; label: string; icon: React.ReactNode; color: string; description: string }[] = [
         {
-            value: "low",
-            label: "Low",
-            icon: <Clock className="h-4 w-4" />,
-            color: "bg-teal-100 text-teal-800 border-teal-200",
-            description: "Can be completed when time allows",
+            value: "easy",
+            label: "Easy",
+            icon: <Zap className="h-4 w-4" />,
+            color: "bg-blue-100 text-blue-800 border-blue-200",
+            description: "Basic concepts, minimal effort required",
         },
         {
             value: "medium",
             label: "Medium",
-            icon: <Clock className="h-4 w-4" />,
-            color: "bg-green-100 text-green-800 border-green-200",
-            description: "Should be completed soon",
+            icon: <Dumbbell className="h-4 w-4" />,
+            color: "bg-indigo-100 text-indigo-800 border-indigo-200",
+            description: "Moderate complexity, requires focus",
         },
         {
-            value: "high",
-            label: "High",
-            icon: <AlertTriangle className="h-4 w-4" />,
-            color: "bg-amber-100 text-amber-800 border-amber-200",
-            description: "Important task that needs attention",
+            value: "hard",
+            label: "Hard",
+            icon: <Brain className="h-4 w-4" />,
+            color: "bg-orange-100 text-orange-800 border-orange-200",
+            description: "Complex concepts, significant effort needed",
         },
         {
-            value: "critical",
-            label: "Critical",
-            icon: <AlertCircle className="h-4 w-4" />,
-            color: "bg-red-100 text-red-800 border-red-200",
-            description: "Urgent task requiring immediate action",
+            value: "expert",
+            label: "Expert",
+            icon: <Award className="h-4 w-4" />,
+            color: "bg-purple-100 text-purple-800 border-purple-200",
+            description: "Advanced material, mastery required",
         },
     ]
 
-    const selectedOption = priorityOptions.find((option) => option.value === priority) || priorityOptions[0]
+    const selectedOption = difficultyOptions.find((option) => option.value === difficulty) || difficultyOptions[0]
 
     return (
         <div className="relative" ref={dropdownRef}>
             <label className="block text-sm font-medium text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 mb-1.5">
-                Priority
+                Difficulty
             </label>
             <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="w-full flex items-center justify-between p-2.5 rounded-md border border-indigo-300 dark:border-indigo-700 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:border-indigo-400 dark:hover:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors shadow-sm"
                 aria-haspopup="true"
                 aria-expanded={isDropdownOpen}
-                aria-label={`Current priority: ${priority}`}
+                aria-label={`Current difficulty: ${difficulty}`}
             >
                 <div className={`flex items-center ${selectedOption.color} px-2.5 py-1 rounded-md`}>
                     {selectedOption.icon}
@@ -82,15 +84,15 @@ export default function PriorityDropdown({ priority, onChange }: PriorityDropdow
             {isDropdownOpen && (
                 <div className="absolute z-20 mt-1 w-full bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-800 rounded-md shadow-lg overflow-hidden">
                     <div className="py-1">
-                        {priorityOptions.map((option) => (
+                        {difficultyOptions.map((option) => (
                             <button
                                 key={option.value}
-                                className={`flex flex-col w-full px-3 py-2 text-left hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors ${priority === option.value ? "bg-indigo-50 dark:bg-indigo-900/30" : ""}`}
+                                className={`flex flex-col w-full px-3 py-2 text-left hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors ${difficulty === option.value ? "bg-indigo-50 dark:bg-indigo-900/30" : ""}`}
                                 onClick={() => {
-                                    onChange(option.value as "low" | "medium" | "high" | "critical")
+                                    onChange(option.value)
                                     setIsDropdownOpen(false)
                                 }}
-                                aria-label={`Set priority to ${option.label}`}
+                                aria-label={`Set difficulty to ${option.label}`}
                             >
                                 <div className="flex items-center">
                                     <div className={`flex items-center ${option.color} px-2 py-1 rounded-md`}>
