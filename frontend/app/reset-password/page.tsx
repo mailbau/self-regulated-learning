@@ -1,8 +1,8 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
-import { useRouter } from "next/router"
+import { Suspense, useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,7 +13,7 @@ import { AlertCircle, Lock, Loader2 } from "lucide-react"
 import { api } from "@/lib/api"
 import { ApiError } from "@/lib/api/client"
 
-export default function ResetPassword() {
+function ResetPasswordForm() {
     const [password, setPassword] = useState("")
     const [confirmPassword, setConfirmPassword] = useState("")
     const [loading, setLoading] = useState(false)
@@ -21,14 +21,14 @@ export default function ResetPassword() {
     const [success, setSuccess] = useState(false)
     const [token, setToken] = useState<string | null>(null)
     const router = useRouter()
+    const searchParams = useSearchParams()
 
     useEffect(() => {
-        // Get token from URL query parameter
-        const { token } = router.query
-        if (token && typeof token === "string") {
-            setToken(token)
+        const tokenParam = searchParams.get("token")
+        if (tokenParam) {
+            setToken(tokenParam)
         }
-    }, [router.query])
+    }, [searchParams])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -159,4 +159,12 @@ export default function ResetPassword() {
             </div>
         </div>
     )
-} 
+}
+
+export default function ResetPassword() {
+    return (
+        <Suspense fallback={null}>
+            <ResetPasswordForm />
+        </Suspense>
+    )
+}

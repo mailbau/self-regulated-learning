@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 import type { User } from "@/types"
 import { api } from "@/lib/api"
 import { setAccessToken } from "@/lib/api/client"

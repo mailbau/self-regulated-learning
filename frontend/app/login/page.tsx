@@ -3,7 +3,7 @@
 import type React from "react"
 import Image from "next/image"
 import { useState } from "react"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Player from "@/components/LottiePlayer"
 import { api, isDemoMode } from "@/lib/api"

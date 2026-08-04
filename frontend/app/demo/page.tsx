@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { GraduationCap, Github, Loader2, ShieldCheck, Sparkles } from "lucide-react"

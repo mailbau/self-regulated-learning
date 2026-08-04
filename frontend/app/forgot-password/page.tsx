@@ -2,7 +2,6 @@
 
 import type React from "react"
 import { useState } from "react"
-import { useRouter } from "next/router"
 import Link from "next/link"
 import { Player } from "@lottiefiles/react-lottie-player"
 import { Button } from "@/components/ui/button"
@@ -19,7 +18,6 @@ export default function ForgotPassword() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
-    const router = useRouter()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()

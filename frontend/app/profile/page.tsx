@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 import Navbar from "@/components/Navbar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"

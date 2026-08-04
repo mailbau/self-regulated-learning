@@ -9,7 +9,7 @@ import UsersList from "@/components/Admin/UsersList"
 import LogsList from "@/components/Admin/LogsList"
 import { api } from "@/lib/api"
 import { ApiError } from "@/lib/api/client"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 import Navbar, { AdminSection } from "@/components/Navbar"
 
 export default function AdminDashboard() {

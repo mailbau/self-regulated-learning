@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 import type { DropResult } from "react-beautiful-dnd"
 import type { Card, Difficulty, List, MoveCardEvent } from "@/types"
 import { api } from "@/lib/api"

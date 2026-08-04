@@ -5,7 +5,7 @@ import Image from "next/image"
 import { useState, useEffect } from "react"
 import { User, LogOut, Bell, Menu, X, GraduationCap, BookOpen, Lightbulb, Users, ClockIcon } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 import { api } from "@/lib/api"
 
 export type AdminSection = "courses" | "learningStrategies" | "users" | "logs"
